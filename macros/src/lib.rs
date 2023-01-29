@@ -1,7 +1,6 @@
 #![feature(proc_macro_span)]
 
 extern crate proc_macro;
-use std::{process::Command};
 
 use proc_macro::{LineColumn, TokenStream, TokenTree};
 use quote::quote;
@@ -48,31 +47,19 @@ impl Source {
     }
 }
 
-fn run_applescript(script: &str) {
-    let process = Command::new("osascript")
-        .arg("-l")
-        .arg("AppleScript")
-        .arg("-e")
-        .arg(script)
-        .spawn()
-        .expect("Failed to run AppleScript");
-
-    let _ = process.wait_with_output().unwrap();
-}
-
 /// Run AppleScript
 #[proc_macro]
-pub fn applescript(input: TokenStream) -> TokenStream {
+pub fn __applescript(input: TokenStream) -> TokenStream {
     let mut s = Source {
         source: String::new(),
         line: 1,
         col: 0,
     };
     s.reconstruct_from(input);
-    println!("{}", s.source);
 
     let source = s.source;
-
-    run_applescript(&source);
-    quote!().into()
+    quote! {
+        run_applescript(#source)
+    }
+    .into()
 }
